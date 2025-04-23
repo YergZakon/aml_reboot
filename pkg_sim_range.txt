@@ -1,0 +1,1139 @@
+-- Package: simdata.pkg_sim_range
+
+-- DROP PACKAGE simdata.pkg_sim_range;
+
+CREATE OR REPLACE PACKAGE simdata.pkg_sim_range
+IS
+  gurl character varying(50) DEFAULT 'http://eias-api-db.servers.int:8080'; --Адрес входящего сервиса в SimBASE
+  grank numeric; --Ранг сообщения
+  gcriteria numeric; --Критерий сообщения
+
+  gmess_id numeric; --ID сообщения
+  greceive_date timestamp without time zone; --Дата получения операции
+  goper_number character varying(300); --Номер операции
+  goper_trans_date timestamp without time zone; --Дата совершения операции
+  gmess_oper_status numeric; --Состояние операции
+  gmess_reason_code numeric; --Основание подачи
+  goper_tenge_amount numeric; --Сумма операции в тенге
+  goper_currency_amount numeric; --Сумма операции в валюте
+  goper_idview numeric; --КВО
+  goper_idtype numeric; --ЕКНП
+  goper_susp_first numeric; --КППО 1
+  goper_susp_second numeric; --КППО 2
+  goper_susp_third numeric; --КППО 3
+  gcfm_maincode character varying(12); --ИИН\БИН СФМ
+  gcfm_code numeric; --Код вида СФМ
+  goper_dopinfo character varying(4000); --Доп. информация по операциии
+  goper_difficulties character varying(4000); --Описание возникших затруднений
+  gmember_id_pl1 numeric; --ID Плательщика 1
+  gmember_maincode_pl1 character varying(32); --ИИН\БИН Плательщика 1
+  gmember_residence_pl1 numeric; --Код резиденства Плательщика 1
+  gmember_bank_address_pl1 character varying(1000); --Код страны банка Плательщика 1
+  gmember_name_pl1 character varying(4000); --ФИО\Наименование Плательщика 1
+  gmember_type_pl1 numeric; --Тип клиента Плательщика 1
+  gmember_id_pl2 numeric; --ID Плательщика 2
+  gmember_maincode_pl2 character varying(32); --ИИН\БИН Плательщика 2
+  gmember_residence_pl2 numeric; --Код резиденства Плательщика 2
+  gmember_bank_address_pl2 character varying(1000); --Код страны банка Плательщика 2
+  gmember_name_pl2 character varying(4000); --ФИО\Наименование Плательщика 2
+  gmember_type_pl2 numeric; --Тип клиента Плательщика 2
+  gmember_id_pol1 numeric; --ID Получателя 1
+  gmember_maincode_pol1 character varying(32); --ИИН\БИН Получателя 1
+  gmember_residence_pol1 numeric; --Код резиденства Получателя 1
+  gmember_bank_address_pol1 character varying(1000); --Код страны банка Получателя 1
+  gmember_name_pol1 character varying(4000); --ФИО\Наименование Получателя 1
+  gmember_id_pol2 numeric; --ID Получателя 2
+  gmember_maincode_pol2 character varying(32); --ИИН\БИН Получателя 2
+  gmember_residence_pol2 numeric; --Код резиденства Получателя 2
+  gmember_bank_address_pol2 character varying(1000); --Код страны банка Получателя 2
+  gmember_name_pol2 character varying(4000); --ФИО\Наименование Получателя 2
+
+  gmember1_maincode character varying(50); --ИИН\БИН Участника 1
+  gmember2_maincode character varying(50); --ИИН\БИН Участника 2
+  gmember1_member_type numeric; --Код типа Участника 1
+  gmember2_member_type numeric; --Код типа Участника 2
+  gmember1_money_trans_sys numeric; --Система перевода денег Участника 1
+  gmember2_money_trans_sys numeric; --Система перевода денег Участника 2
+  gmember1_bank_address numeric; --Местонахождение филиала Участника 1
+  gmember2_bank_address numeric; --Местонахождение филиала Участника 2
+  gmember1_ac_secondname character varying(1200); --Фамилия Участника 1
+  gmember2_ac_secondname character varying(1200); --Фамилия Участника 2
+  gmember1_ac_firstname character varying(1200); --Имя Участника 1
+  gmember2_ac_firstname character varying(1200); --Имя Участника 1
+  gmember1_ac_middlename character varying(1200); --Отчество Участника 1
+  gmember2_ac_middlename character varying(1200); --Отчество Участника 1
+  gmember1_ur_name character varying(1200); --Наименование Участника 1
+  gmember2_ur_name character varying(1200); --Наименование Участника 2
+  gmember1_member_comments character varying(4000); --Доп. информация Участника 1
+  gmember2_member_comments character varying(4000); --Доп. информация Участника 2
+
+  gis_green_1_pol1 numeric; --Вхождение Получателя 1 в список Зеленый 1
+  gis_green_1_pol2 numeric; --Вхождение Получателя 2 в список Зеленый 1
+  gis_green_1_pl1 numeric; --Вхождение Плательщика 1 в список Зеленый 1
+  gis_green_1_pl2 numeric; --Вхождение Плательщика 2 в список Зеленый 1
+  gis_green_2_pl1 numeric; --Вхождение Плательщика 1 в список Зеленый 2
+  gis_green_2_pl2 numeric; --Вхождение Плательщика 2 в список Зеленый 2
+  gis_subsoil_users_pl1 numeric; --Вхождение Плательщика 1 в список Недропользователи
+  gis_subsoil_users_pl2 numeric; --Вхождение Плательщика 2 в список Недропользователи
+  gis_red_1_pl1 numeric; --Вхождение Плательщика 1 в список Красный 1
+  gis_red_1_pl2 numeric; --Вхождение Плательщика 2 в список Красный 1
+  gis_red_2_pl1 numeric; --Вхождение Плательщика 1 в список Красный 2
+  gis_red_2_pl2 numeric; --Вхождение Плательщика 2 в список Красный 2
+  gis_red_3_pl1 numeric; --Вхождение Плательщика 1 в список Красный 3
+  gis_red_3_pl2 numeric; --Вхождение Плательщика 2 в список Красный 3
+  gis_red_4_pol1 numeric; --Вхождение Получателя 1 в список Красный 4
+  gis_red_4_pol2 numeric; --Вхождение Получателя 2 в список Красный 4
+  gis_red_5_pol1 numeric; --Вхождение Получателя 1 в список Красный 5
+  gis_red_5_pol2 numeric; --Вхождение Получателя 2 в список Красный 5
+  gis_fatf_pol1 numeric; --Вхождение Получателя 1 в список ФАТФ
+  gis_fatf_pol2 numeric; --Вхождение Получателя 2 в список ФАТФ
+
+  gis_member1_od_list1 numeric; --Вхождение Участника 1 в список ОД 1
+  gis_member2_od_list1 numeric; --Вхождение Участника 2 в список ОД 1
+  gis_member1_od_list2 numeric; --Вхождение Участника 1 в список ОД 2
+  gis_member2_od_list2 numeric; --Вхождение Участника 2 в список ОД 2
+  gis_member1_od_list3 numeric; --Вхождение Участника 1 в список ОД 3
+  gis_member2_od_list3 numeric; --Вхождение Участника 2 в список ОД 3
+  gis_member1_od_list4 numeric; --Вхождение Участника 1 в список ОД 4
+  gis_member2_od_list4 numeric; --Вхождение Участника 2 в список ОД 4
+  gis_member1_od_list5 numeric; --Вхождение Участника 1 в список ОД 5
+  gis_member2_od_list5 numeric; --Вхождение Участника 2 в список ОД 5
+  gis_member1_ft_list2 numeric; --Вхождение Участника 1 в список ФТ 2
+  gis_member2_ft_list2 numeric; --Вхождение Участника 2 в список ФТ 2
+  gis_member1_ft_list3 numeric; --Вхождение Участника 1 в список ФТ 3
+  gis_member2_ft_list3 numeric; --Вхождение Участника 2 в список ФТ 3
+  gis_member1_ft_list4 numeric; --Вхождение Участника 1 в список ФТ 4
+  gis_member2_ft_list4 numeric; --Вхождение Участника 2 в список ФТ 5
+  gis_member1_dmft_list1 numeric; --Вхождение Участника 1 в список ДМФТ 1	Перечень организаций и лиц, связанных с финансированием терроризма и экстремизма ФЛ
+  gis_member2_dmft_list1 numeric; --Вхождение Участника 2 в список ДМФТ 1
+  gis_member1_dmft_list2 numeric; --Вхождение Участника 1 в список ДМФТ 2	Перечень организаций и лиц, связанных с финансированием терроризма и экстремизма ЮЛ
+  gis_member2_dmft_list2 numeric; --Вхождение Участника 2 в список ДМФТ 2
+  gis_member1_dmft_list3 numeric; --Вхождение Участника 1 в список ДМФТ 3	Список лиц, причастных к террористической деятельности
+  gis_member2_dmft_list3 numeric; --Вхождение Участника 2 в список ДМФТ 3
+  gis_member1_dmft_list4 numeric; --Вхождение Участника 1 в список ДМФТ 4	Список 31.05.23 для ДЦ
+  gis_member2_dmft_list4 numeric; --Вхождение Участника 2 в список ДМФТ 4
+
+  PROCEDURE op_suspended(IN pmess_id numeric); --Проверка приостановленной операции
+  PROCEDURE do_range(IN pmess_id numeric); --Запуск процедуры ранжирования
+  PROCEDURE set_params(IN pmess_id numeric); --Запись параметров в переменные
+  FUNCTION is_abr_dublicate() RETURN numeric; --Проверка на наличие дубликатов (Перевод за рубеж)
+  FUNCTION is_abr_not_range() RETURN numeric; --Проверка по условиям, при которых сообщение является неранжируемым (Перевод за рубеж)
+  FUNCTION is_abr_range() RETURN numeric; --Проверка по условиям, при которых сообщение является ранжируемым (Перевод за рубеж)
+  PROCEDURE sim_send_mess(IN paction numeric); --Формирование запроса о поступлении сообщения в SimBASE
+  FUNCTION send_db_request(papi character varying, pcontent character varying) RETURN character varying; --Отправка запроса
+  PROCEDURE set_rank(IN prank numeric, IN pcriteria numeric); --Сохранение значений ранга и критерия сообщения
+  PROCEDURE sim_send_error_mess(); --Повторная отправка ошибочных сообщений
+  PROCEDURE sim_check_range_mess(); --Ранжирование порции необработанных сообщений
+  PROCEDURE sim_check_range_mess2(); --Ранжирование порции необработанных сообщений
+  FUNCTION is_od_operation() RETURN numeric; --Проверка по условиям ОД
+  FUNCTION is_od_high_risk() RETURN numeric; --Проверка операции ОД на высокий риск
+  FUNCTION is_od_mid_risk() RETURN numeric; --Проверка операции ОД на средний риск
+  FUNCTION is_od_low_risk() RETURN numeric; --Проверка операции ОД на низкий риск
+  FUNCTION is_ft_operation() RETURN numeric; --Проверка по условиям ФТ
+  FUNCTION is_ft_high_risk() RETURN numeric; --Проверка операции ФТ на высокий риск
+  FUNCTION is_ft_mid_risk() RETURN numeric; --Проверка операции ФТ на средний риск
+  FUNCTION is_ft_low_risk() RETURN numeric; --Проверка операции ФТ на низкий риск
+  FUNCTION is_abr_high_risk_1() RETURN numeric; --Высокий риск, 1 критерий (Перевод за рубеж)
+  FUNCTION is_abr_high_risk_2() RETURN numeric; --Высокий риск, 2 критерий (Перевод за рубеж)
+  FUNCTION is_abr_high_risk_3() RETURN numeric; --Высокий риск, 3 критерий (Перевод за рубеж)
+  FUNCTION is_abr_high_risk_4() RETURN numeric; --Высокий риск, 4 критерий (Перевод за рубеж)
+  FUNCTION is_abr_high_risk_5() RETURN numeric; --Высокий риск, 5 критерий (Перевод за рубеж)
+  FUNCTION is_abr_high_risk_6() RETURN numeric; --Высокий риск, 6 критерий (Перевод за рубеж)
+  FUNCTION is_abr_high_risk_7() RETURN numeric; --Высокий риск, 7 критерий (Перевод за рубеж)
+  FUNCTION is_abr_mid_risk_1() RETURN numeric; --Средний риск, 1 критерий (Перевод за рубеж)
+  FUNCTION is_abr_mid_risk_2() RETURN numeric; --Средний риск, 2 критерий (Перевод за рубеж)
+  FUNCTION is_abr_mid_risk_3() RETURN numeric; --Средний риск, 3 критерий (Перевод за рубеж)
+  FUNCTION is_abr_mid_risk_4() RETURN numeric; --Средний риск, 4 критерий (Перевод за рубеж)
+  FUNCTION is_abr_mid_risk_5() RETURN numeric; --Средний риск, 5 критерий (Перевод за рубеж)
+  FUNCTION is_abr_mid_risk_6() RETURN numeric; --Средний риск, 6 критерий (Перевод за рубеж)
+  FUNCTION is_abr_mid_risk_7() RETURN numeric; --Средний риск, 7 критерий (Перевод за рубеж)
+  FUNCTION is_abr_low_risk_1() RETURN numeric; --Низкий риск, 1 критерий (Перевод за рубеж)
+  FUNCTION is_abr_low_risk_2() RETURN numeric; --Низкий риск, 2 критерий (Перевод за рубеж)
+  FUNCTION is_abr_low_risk_3() RETURN numeric; --Низкий риск, 3 критерий (Перевод за рубеж)
+  FUNCTION is_abr_low_risk_4() RETURN numeric; --Низкий риск, 4 критерий (Перевод за рубеж)
+  FUNCTION is_abr_low_risk_5() RETURN numeric; --Низкий риск, 5 критерий (Перевод за рубеж)
+  FUNCTION is_abr_low_risk_6() RETURN numeric; --Низкий риск, 6 критерий (Перевод за рубеж)
+  FUNCTION is_piramid_range() RETURN numeric; --Проверка по условиям, при которых сообщение является ранжируемым (Финансовая пирамида)
+  FUNCTION is_piramid_high_risk() RETURN numeric; --Высокий риск (Финансовая пирамида)
+  FUNCTION is_piramid_mid_risk() RETURN numeric; --Средний риск (Финансовая пирамида)
+  FUNCTION is_dmft_operation() RETURN numeric; --Проверка на вхождение в списки ДМФТ
+  FUNCTION is_dmft_ft1() RETURN numeric; --Проверка на вхождение в списки ДМФТ для ФТ1
+  FUNCTION is_dmft_ft2() RETURN numeric; --Проверка на вхождение в списки ДМФТ для ФТ2
+  FUNCTION is_dmft_pdl() RETURN numeric; --Проверка на вхождение в списки ДМФТ для ПДЛ
+  FUNCTION is_dmft_od() RETURN numeric; --Проверка на вхождение в списки ДМФТ для ОД
+END pkg_sim_range;
+
+CREATE OR REPLACE PACKAGE BODY simdata.pkg_sim_range
+IS
+  PROCEDURE op_suspended(IN pmess_id numeric) IS
+	pMESS_OPER_STATUS NUMBER;
+	pMESS_REASON_CODE NUMBER;
+  BEGIN
+    SELECT MESS_OPER_STATUS, MESS_REASON_CODE INTO pMESS_OPER_STATUS, pMESS_REASON_CODE FROM DWH_KFM.EXP_MESSINFO WHERE MESS_ID = pMESS_ID;
+    IF (pMESS_OPER_STATUS = 3) AND (pMESS_REASON_CODE IN (2, 8, 4, 10)) 
+      THEN 
+        gMESS_ID := pMESS_ID;
+        SIM_SEND_MESS(1);
+      ELSE 
+        INSERT INTO SIMDATA.SIM_CHECK_MESS (MESS_ID, MESS_ADDED)
+        SELECT pMESS_ID, SYSDATE FROM DUAL
+        WHERE NOT EXISTS 
+        (SELECT * FROM SIMDATA.SIM_CHECK_MESS WHERE MESS_ID = pMESS_ID);
+    END IF;
+  END OP_SUSPENDED;
+
+  PROCEDURE do_range(IN pmess_id numeric) IS
+  BEGIN
+    set jit = off;
+	
+    SET_PARAMS(pMESS_ID);
+
+    IF IS_OD_OPERATION() = 1 THEN
+      IF IS_OD_HIGH_RISK() = 1 THEN
+        SET_RANK(8, NULL);
+        SIM_SEND_MESS(3);
+      ELSIF IS_OD_MID_RISK() = 1 THEN
+        SET_RANK(4, NULL);
+      ELSIF IS_OD_LOW_RISK() = 1 THEN
+        SET_RANK(1, NULL);
+      END IF;
+    END IF;
+
+    IF IS_FT_OPERATION() = 1 THEN
+      IF IS_FT_HIGH_RISK() = 1 THEN
+        SET_RANK(10, NULL);
+        SIM_SEND_MESS(4);
+      ELSIF IS_FT_MID_RISK() = 1 THEN
+        SET_RANK(6, NULL);
+      ELSIF IS_FT_LOW_RISK() = 1 THEN
+        SET_RANK(3, NULL);
+      END IF;
+    END IF;
+
+    IF /*IS_ABR_DUBLICATE() = 1 AND*/ IS_ABR_NOT_RANGE() = 0 AND IS_ABR_RANGE() = 1 THEN
+      IF IS_ABR_HIGH_RISK_1() = 1 THEN
+        SET_RANK(9, 1);
+        SIM_SEND_MESS(5);
+      ELSIF IS_ABR_HIGH_RISK_2() = 1 THEN
+        SET_RANK(9, 2);
+        SIM_SEND_MESS(5);
+      ELSIF IS_ABR_HIGH_RISK_3() = 1 THEN
+        SET_RANK(9, 3);
+        SIM_SEND_MESS(5);
+      ELSIF IS_ABR_HIGH_RISK_4() = 1 THEN
+        SET_RANK(9, 4);
+        SIM_SEND_MESS(5);
+      ELSIF IS_ABR_HIGH_RISK_5() = 1 THEN
+        SET_RANK(9, 5);
+        SIM_SEND_MESS(5);
+      ELSIF IS_ABR_HIGH_RISK_6() = 1 THEN
+        SET_RANK(9, 6);
+        SIM_SEND_MESS(5);
+      ELSIF IS_ABR_HIGH_RISK_7() = 1 THEN
+        SET_RANK(9, 7);
+        SIM_SEND_MESS(5);
+
+      ELSIF IS_ABR_MID_RISK_1() = 1 THEN
+        SET_RANK(5, 1);
+      ELSIF IS_ABR_MID_RISK_2() = 1 THEN
+        SET_RANK(5, 2);
+      ELSIF IS_ABR_MID_RISK_3() = 1 THEN
+        SET_RANK(5, 3);
+      ELSIF IS_ABR_MID_RISK_4() = 1 THEN
+        SET_RANK(5, 4);
+      ELSIF IS_ABR_MID_RISK_5() = 1 THEN
+        SET_RANK(5, 5);
+      ELSIF IS_ABR_MID_RISK_6() = 1 THEN
+        SET_RANK(5, 6);
+      ELSIF IS_ABR_MID_RISK_7() = 1 THEN
+        SET_RANK(5, 7);
+
+      ELSIF IS_ABR_LOW_RISK_1() = 1 THEN
+        SET_RANK(2, 1);
+      ELSIF IS_ABR_LOW_RISK_2() = 1 THEN
+        SET_RANK(2, 2);
+      ELSIF IS_ABR_LOW_RISK_3() = 1 THEN
+        SET_RANK(2, 3);
+      ELSIF IS_ABR_LOW_RISK_4() = 1 THEN
+        SET_RANK(2, 4);
+      ELSIF IS_ABR_LOW_RISK_5() = 1 THEN
+        SET_RANK(2, 5);
+      ELSIF IS_ABR_LOW_RISK_6() = 1 THEN
+        SET_RANK(2, 6);
+      END IF;
+    END IF;
+
+	IF IS_PIRAMID_RANGE() = 1 THEN
+      IF IS_PIRAMID_HIGH_RISK() = 1 THEN
+        SET_RANK(11, NULL);
+        SIM_SEND_MESS(6);
+      ELSIF IS_PIRAMID_MID_RISK() = 1 THEN
+        SET_RANK(7, NULL);
+      END IF;
+    END IF;
+
+	IF IS_DMFT_OPERATION() = 1 THEN
+		IF IS_DMFT_FT1() = 1 THEN
+			SIM_SEND_MESS(7);
+		ELSIF IS_DMFT_FT2() = 1 THEN
+			SIM_SEND_MESS(8);
+		ELSIF IS_DMFT_PDL() = 1 THEN
+			SIM_SEND_MESS(9);
+		ELSIF IS_DMFT_OD() = 1 THEN
+			SIM_SEND_MESS(10);
+		END IF;
+	END IF;
+
+    --INSERT INTO SIM_DATE_TST (MESS_ID, DATE_RANGE) VALUES (gMESS_ID, SYSDATE);
+    DELETE FROM SIMDATA.SIM_CHECK_MESS WHERE MESS_ID = pMESS_ID;
+  END DO_RANGE;
+
+  FUNCTION is_abr_high_risk_1() RETURN numeric IS
+  BEGIN
+    IF (gIS_RED_1_PL1 != 0 OR gIS_RED_1_PL2 != 0)
+        AND (gOPER_IDTYPE IN (119, 413, 561, 661)
+          OR gOPER_IDVIEW = 911 
+          OR gOPER_SUSP_FIRST IN (1057, 1066, 3002) 
+          OR (gOPER_SUSP_FIRST = 1058 AND gOPER_IDTYPE NOT IN (423, 421))
+          OR LOWER(gOPER_DOPINFO) LIKE '%займ%'
+          OR LOWER(gOPER_DOPINFO) LIKE '%беспроцент%'
+          OR LOWER(gOPER_DOPINFO) LIKE '%без процент%'
+          OR LOWER(gOPER_DIFFICULTIES) LIKE '%займ%'
+          OR LOWER(gOPER_DIFFICULTIES) LIKE '%беспроцент%'
+          OR LOWER(gOPER_DIFFICULTIES) LIKE '%без процент%')
+        AND gOPER_TENGE_AMOUNT >= 200000000
+        AND (gIS_SUBSOIL_USERS_PL1 = 0 AND gIS_SUBSOIL_USERS_PL2 = 0 AND gIS_GREEN_1_PL1 = 0 AND gIS_GREEN_1_PL2 = 0)
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_ABR_HIGH_RISK_1;
+
+  FUNCTION is_abr_high_risk_2() RETURN numeric IS
+  BEGIN
+    IF (gIS_RED_2_PL1 != 0 OR gIS_RED_2_PL2 != 0 OR gOPER_SUSP_FIRST = 1113)
+        AND gOPER_TENGE_AMOUNT >= 200000000
+        AND (gIS_SUBSOIL_USERS_PL1 = 0 AND gIS_SUBSOIL_USERS_PL2 = 0 AND gIS_GREEN_1_PL1 = 0 AND gIS_GREEN_1_PL2 = 0)
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_ABR_HIGH_RISK_2;
+
+  FUNCTION is_abr_high_risk_3() RETURN numeric IS
+  BEGIN
+    IF (gIS_SUBSOIL_USERS_PL1 = 0 AND gIS_SUBSOIL_USERS_PL2 = 0 AND gIS_GREEN_1_PL1 = 0 AND gIS_GREEN_1_PL2 = 0)
+        AND (gOPER_TENGE_AMOUNT >= 200000000
+          AND ((
+            (gIS_RED_3_PL1 != 0 OR gIS_RED_3_PL2 != 0)
+            AND (LOWER(gOPER_DOPINFO) LIKE '%avans%'
+              OR LOWER(gOPER_DOPINFO) LIKE '%предоплат%'
+              OR LOWER(gOPER_DOPINFO) LIKE '%predoplat%'
+              OR LOWER(gOPER_DOPINFO) LIKE '%аванс%'
+              OR LOWER(gOPER_DIFFICULTIES) LIKE '%avans%'
+              OR LOWER(gOPER_DIFFICULTIES) LIKE '%предоплат%'
+              OR LOWER(gOPER_DIFFICULTIES) LIKE '%predoplat%'
+              OR LOWER(gOPER_DIFFICULTIES) LIKE '%аванс%')
+            )
+            OR gOPER_SUSP_FIRST = 1112
+          )
+        )
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_ABR_HIGH_RISK_3;
+
+  FUNCTION is_abr_high_risk_4() RETURN numeric IS
+  BEGIN
+    IF (gIS_RED_4_POL1 != 0 OR gIS_RED_4_POL2 != 0)
+        AND gOPER_TENGE_AMOUNT >= 200000000
+        AND (gIS_SUBSOIL_USERS_PL1 = 0 AND gIS_SUBSOIL_USERS_PL2 = 0 AND gIS_GREEN_1_PL1 = 0 AND gIS_GREEN_1_PL2 = 0)
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_ABR_HIGH_RISK_4;
+
+  FUNCTION is_abr_high_risk_5() RETURN numeric IS
+  BEGIN
+    IF gOPER_TENGE_AMOUNT >= 200000000
+        AND (gIS_FATF_POL1 != 0 OR gIS_FATF_POL2 != 0)
+        AND gOPER_IDTYPE NOT IN (871, 872)
+        AND (gIS_SUBSOIL_USERS_PL1 = 0 AND gIS_SUBSOIL_USERS_PL2 = 0 AND gIS_GREEN_1_PL1 = 0 AND gIS_GREEN_1_PL2 = 0)
+      THEN IF gMESS_REASON_CODE IN (1, 10)
+        THEN IF gMEMBER_BANK_ADDRESS_POL1 != gMEMBER_RESIDENCE_POL1 AND gMEMBER_BANK_ADDRESS_POL2 != gMEMBER_RESIDENCE_POL2
+          THEN RETURN 1;
+          ELSE RETURN 0;
+        END IF;
+        ELSE RETURN 1;
+      END IF;
+      ELSE RETURN 0;
+    END IF;
+  END IS_ABR_HIGH_RISK_5;
+
+  FUNCTION is_abr_high_risk_6() RETURN numeric IS
+  BEGIN
+    IF (gIS_RED_5_POL1 != 0 OR gIS_RED_5_POL2 != 0)
+        AND gOPER_TENGE_AMOUNT >= 200000000
+        AND (gIS_SUBSOIL_USERS_PL1 = 0 AND gIS_SUBSOIL_USERS_PL2 = 0 AND gIS_GREEN_1_PL1 = 0 AND gIS_GREEN_1_PL2 = 0)
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_ABR_HIGH_RISK_6;  
+
+  FUNCTION is_abr_high_risk_7() RETURN numeric IS
+  BEGIN
+    IF (gIS_SUBSOIL_USERS_PL1 = 0 AND gIS_SUBSOIL_USERS_PL2 = 0 AND gIS_GREEN_1_PL1 = 0 AND gIS_GREEN_1_PL2 = 0)
+        AND ((gOPER_TENGE_AMOUNT >= 500000000
+            AND gMESS_REASON_CODE IN (2, 8)) 
+          OR ((gMEMBER_TYPE_PL1 = 2 OR gMEMBER_TYPE_PL2 = 2) 
+            AND gOPER_TENGE_AMOUNT >= 500000000
+            AND gMESS_REASON_CODE IN (1, 10)
+            AND (gOPER_IDTYPE LIKE '5%' 
+              OR gOPER_IDTYPE LIKE '6%' 
+              OR gOPER_IDTYPE IN (343, 413)
+              OR gOPER_IDVIEW IN (1911, 2020)
+            )
+          )
+        )
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_ABR_HIGH_RISK_7;
+
+  FUNCTION is_abr_mid_risk_1() RETURN numeric IS
+  BEGIN
+    IF (gIS_RED_1_PL1 != 0 OR gIS_RED_1_PL2 != 0)
+        AND (gOPER_IDTYPE IN (119, 413, 561, 661)
+          OR gOPER_IDVIEW = 911 
+          OR gOPER_SUSP_FIRST IN (1057, 1066, 3002) 
+          OR (gOPER_SUSP_FIRST = 1058 AND gOPER_IDTYPE NOT IN (423, 421))
+          OR LOWER(gOPER_DOPINFO) LIKE '%займ%'
+          OR LOWER(gOPER_DOPINFO) LIKE '%беспроцент%'
+          OR LOWER(gOPER_DOPINFO) LIKE '%без процент%'
+          OR LOWER(gOPER_DIFFICULTIES) LIKE '%займ%'
+          OR LOWER(gOPER_DIFFICULTIES) LIKE '%беспроцент%'
+          OR LOWER(gOPER_DIFFICULTIES) LIKE '%без процент%')
+        AND ((gOPER_TENGE_AMOUNT BETWEEN 100000000 AND 199999999)
+          OR (gOPER_TENGE_AMOUNT >= 100000000 AND (gIS_SUBSOIL_USERS_PL1 != 0 OR gIS_SUBSOIL_USERS_PL2 != 0 OR gIS_GREEN_1_PL1 != 0 OR gIS_GREEN_1_PL2 != 0))
+        )
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_ABR_MID_RISK_1;
+
+  FUNCTION is_abr_mid_risk_2() RETURN numeric IS
+  BEGIN
+    IF (gIS_RED_2_PL1 != 0 OR gIS_RED_2_PL2 != 0 OR gOPER_SUSP_FIRST = 1113)
+        AND ((gOPER_TENGE_AMOUNT BETWEEN 100000000 AND 199999999)
+          OR (gOPER_TENGE_AMOUNT >= 100000000 AND (gIS_SUBSOIL_USERS_PL1 != 0 OR gIS_SUBSOIL_USERS_PL2 != 0 OR gIS_GREEN_1_PL1 != 0 OR gIS_GREEN_1_PL2 != 0))
+        )
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_ABR_MID_RISK_2;
+
+  FUNCTION is_abr_mid_risk_3() RETURN numeric IS
+  BEGIN
+    IF ((gOPER_TENGE_AMOUNT BETWEEN 100000000 AND 199999999)
+          OR (gOPER_TENGE_AMOUNT >= 100000000 AND (gIS_SUBSOIL_USERS_PL1 != 0 OR gIS_SUBSOIL_USERS_PL2 != 0 OR gIS_GREEN_1_PL1 != 0 OR gIS_GREEN_1_PL2 != 0))
+        )
+        AND (((gIS_RED_3_PL1 != 0 OR gIS_RED_3_PL2 != 0)
+          AND (LOWER(gOPER_DOPINFO) LIKE '%avans%'
+            OR LOWER(gOPER_DOPINFO) LIKE '%предоплат%'
+            OR LOWER(gOPER_DOPINFO) LIKE '%predoplat%'
+            OR LOWER(gOPER_DOPINFO) LIKE '%аванс%'
+            OR LOWER(gOPER_DIFFICULTIES) LIKE '%avans%'
+            OR LOWER(gOPER_DIFFICULTIES) LIKE '%предоплат%'
+            OR LOWER(gOPER_DIFFICULTIES) LIKE '%predoplat%'
+            OR LOWER(gOPER_DIFFICULTIES) LIKE '%аванс%'))
+          OR gOPER_SUSP_FIRST = 1112)
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_ABR_MID_RISK_3;
+
+  FUNCTION is_abr_mid_risk_4() RETURN numeric IS
+  BEGIN
+    IF (gIS_RED_4_POL1 != 0 OR gIS_RED_4_POL2 != 0)
+        AND ((gOPER_TENGE_AMOUNT BETWEEN 100000000 AND 199999999)
+          OR (gOPER_TENGE_AMOUNT >= 100000000 AND (gIS_SUBSOIL_USERS_PL1 != 0 OR gIS_SUBSOIL_USERS_PL2 != 0 OR gIS_GREEN_1_PL1 != 0 OR gIS_GREEN_1_PL2 != 0))
+        )
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_ABR_MID_RISK_4;
+
+  FUNCTION is_abr_mid_risk_5() RETURN numeric IS
+  BEGIN
+    IF ((gOPER_TENGE_AMOUNT BETWEEN 100000000 AND 199999999)
+          OR (gOPER_TENGE_AMOUNT >= 100000000 
+            AND (gIS_SUBSOIL_USERS_PL1 != 0 OR gIS_SUBSOIL_USERS_PL2 != 0 OR gIS_GREEN_1_PL1 != 0 OR gIS_GREEN_1_PL2 != 0 OR gMESS_REASON_CODE IN (1, 10)))
+          )
+        AND (gIS_FATF_POL1 != 0 OR gIS_FATF_POL2 != 0)
+        AND gOPER_IDTYPE NOT IN (871, 872)
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_ABR_MID_RISK_5;
+
+  FUNCTION is_abr_mid_risk_6() RETURN numeric IS
+  BEGIN
+    IF (gIS_RED_5_POL1 != 0 OR gIS_RED_5_POL2 != 0)
+        AND ((gOPER_TENGE_AMOUNT BETWEEN 100000000 AND 199999999)
+          OR (gOPER_TENGE_AMOUNT >= 100000000 AND (gIS_SUBSOIL_USERS_PL1 != 0 OR gIS_SUBSOIL_USERS_PL2 != 0 OR gIS_GREEN_1_PL1 != 0 OR gIS_GREEN_1_PL2 != 0))
+        )
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_ABR_MID_RISK_6;
+
+  FUNCTION is_abr_mid_risk_7() RETURN numeric IS
+  BEGIN
+    IF gOPER_TENGE_AMOUNT >= 500000000
+        AND (
+          (gMESS_REASON_CODE IN (2, 8) AND (gIS_SUBSOIL_USERS_PL1 != 0 OR gIS_SUBSOIL_USERS_PL2 != 0 OR gIS_GREEN_1_PL1 != 0 OR gIS_GREEN_1_PL2 != 0))
+          OR
+          (gMESS_REASON_CODE IN (1, 10)
+            AND (gOPER_IDTYPE LIKE '5%'
+              OR gOPER_IDTYPE LIKE '6%'
+              OR gOPER_IDTYPE IN (343, 413)
+              OR gOPER_IDVIEW IN (1911, 2020)
+            )
+            AND (gMEMBER_TYPE_PL1 IN (1, 3) OR gMEMBER_TYPE_PL2 IN (1, 3))
+          )
+        )
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_ABR_MID_RISK_7;
+
+  FUNCTION is_abr_low_risk_1() RETURN numeric IS
+  BEGIN
+    IF (gIS_RED_1_PL1 != 0 OR gIS_RED_1_PL2 != 0)
+        AND (gOPER_IDTYPE IN (119, 413, 561, 661)
+          OR gOPER_IDVIEW = 911
+          OR gOPER_SUSP_FIRST IN (1057, 1066, 3002)
+          OR (gOPER_SUSP_FIRST = 1058 AND gOPER_IDTYPE NOT IN (423, 421))
+          OR LOWER(gOPER_DOPINFO) LIKE '%займ%'
+          OR LOWER(gOPER_DOPINFO) LIKE '%беспроцент%'
+          OR LOWER(gOPER_DOPINFO) LIKE '%без процент%'
+          OR LOWER(gOPER_DIFFICULTIES) LIKE '%займ%'
+          OR LOWER(gOPER_DIFFICULTIES) LIKE '%беспроцент%'
+          OR LOWER(gOPER_DIFFICULTIES) LIKE '%без процент%')
+        AND gOPER_TENGE_AMOUNT BETWEEN 50000000 AND 99999999
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_ABR_LOW_RISK_1;
+
+  FUNCTION is_abr_low_risk_2() RETURN numeric IS
+  BEGIN
+    IF (gIS_RED_2_PL1 != 0 OR gIS_RED_2_PL2 != 0 OR gOPER_SUSP_FIRST = 1113)
+        AND gOPER_TENGE_AMOUNT BETWEEN 50000000 AND 99999999
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_ABR_LOW_RISK_2;
+
+  FUNCTION is_abr_low_risk_3() RETURN numeric IS
+  BEGIN
+    IF gOPER_TENGE_AMOUNT BETWEEN 50000000 AND 99999999
+        AND (((gIS_RED_3_PL1 != 0 OR gIS_RED_3_PL2 != 0)
+          AND (LOWER(gOPER_DOPINFO) LIKE '%avans%'
+            OR LOWER(gOPER_DOPINFO) LIKE '%предоплат%'
+            OR LOWER(gOPER_DOPINFO) LIKE '%predoplat%'
+            OR LOWER(gOPER_DOPINFO) LIKE '%аванс%'
+            OR LOWER(gOPER_DIFFICULTIES) LIKE '%avans%'
+            OR LOWER(gOPER_DIFFICULTIES) LIKE '%предоплат%'
+            OR LOWER(gOPER_DIFFICULTIES) LIKE '%predoplat%'
+            OR LOWER(gOPER_DIFFICULTIES) LIKE '%аванс%'))
+          OR gOPER_SUSP_FIRST = 1112)
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_ABR_LOW_RISK_3;
+
+  FUNCTION is_abr_low_risk_4() RETURN numeric IS
+  BEGIN
+    IF (gIS_RED_4_POL1 != 0 OR gIS_RED_4_POL2 != 0)
+        AND gOPER_TENGE_AMOUNT BETWEEN 50000000 AND 99999999
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_ABR_LOW_RISK_4;
+
+  FUNCTION is_abr_low_risk_5() RETURN numeric IS
+  BEGIN
+    IF gOPER_TENGE_AMOUNT BETWEEN 50000000 AND 99999999
+        AND (gIS_FATF_POL1 != 0 OR gIS_FATF_POL2 != 0)
+        AND gOPER_IDTYPE NOT IN (871, 872)
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_ABR_LOW_RISK_5;
+
+  FUNCTION is_abr_low_risk_6() RETURN numeric IS
+  BEGIN
+    IF gOPER_TENGE_AMOUNT BETWEEN 50000000 AND 99999999
+        AND (gIS_RED_5_POL1 != 0 OR gIS_RED_5_POL2 != 0)
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_ABR_LOW_RISK_6;
+
+  FUNCTION is_od_operation() RETURN numeric IS
+  BEGIN
+    IF ((gMESS_OPER_STATUS = 3 AND gMESS_REASON_CODE NOT IN (2, 8)) OR (gMESS_OPER_STATUS != 3))
+        AND gIS_MEMBER1_OD_LIST1 = 0 AND gIS_MEMBER2_OD_LIST1 = 0
+        AND gIS_MEMBER1_OD_LIST2 = 0 AND gIS_MEMBER2_OD_LIST2 = 0
+        AND gIS_MEMBER1_OD_LIST3 = 0 AND gIS_MEMBER2_OD_LIST3 = 0
+        AND gIS_MEMBER1_OD_LIST4 = 0 AND gIS_MEMBER2_OD_LIST4 = 0
+        AND gIS_MEMBER1_OD_LIST5 = 0 AND gIS_MEMBER2_OD_LIST5 = 0
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_OD_OPERATION;
+
+  FUNCTION is_od_high_risk() RETURN numeric IS
+  BEGIN
+    IF (gOPER_TENGE_AMOUNT > 300000000 
+        AND gOPER_IDVIEW IN (311,321,511,530) 
+        AND (gOPER_IDTYPE IN (119,321,322,340,341,342,343,346,561,661,710,711,780,790,814,816,818,819,821,822,851,852,854,858,859,880) OR gOPER_IDTYPE IS NULL)
+        AND gMESS_REASON_CODE IN (1,8,10,12,13,14,2)
+        AND (gOPER_SUSP_FIRST IN (1017,1019,1050,1054,1055,1057,1058,1064,1067,1072,4013,7006,7013) OR gOPER_SUSP_FIRST IS NULL)
+        AND (gOPER_SUSP_SECOND IN (1017,1019,1050,1054,1055,1057,1058,1064,1067,1072,4013,7006,7013) OR gOPER_SUSP_SECOND IS NULL)
+        AND (gOPER_SUSP_THIRD IN (1017,1019,1050,1054,1055,1057,1058,1064,1067,1072,4013,7006,7013) OR gOPER_SUSP_THIRD IS NULL))
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_OD_HIGH_RISK;
+
+  FUNCTION is_od_mid_risk() RETURN numeric IS
+  BEGIN
+    IF (gOPER_TENGE_AMOUNT BETWEEN 212255001 AND 300000000
+        AND gOPER_IDVIEW IN (311,321,511,530)
+        AND (gOPER_IDTYPE IN (119,321,322,340,341,342,343,346,561,661,710,711,780,790,814,816,818,819,821,822,851,852,854,858,859,880) OR gOPER_IDTYPE IS NULL)
+        AND gMESS_REASON_CODE IN (1,8,10,12,13,14,2)
+        AND (gOPER_SUSP_FIRST IN (1017,1019,1050,1054,1055,1057,1058,1064,1067,1072,4013,7006,7013) OR gOPER_SUSP_FIRST IS NULL)
+        AND (gOPER_SUSP_SECOND IN (1017,1019,1050,1054,1055,1057,1058,1064,1067,1072,4013,7006,7013) OR gOPER_SUSP_SECOND IS NULL)
+        AND (gOPER_SUSP_THIRD IN (1017,1019,1050,1054,1055,1057,1058,1064,1067,1072,4013,7006,7013) OR gOPER_SUSP_THIRD IS NULL))
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_OD_MID_RISK;
+
+  FUNCTION is_od_low_risk() RETURN numeric IS
+  BEGIN
+    IF (gOPER_TENGE_AMOUNT BETWEEN 169678080 AND 212255000 
+        AND gOPER_IDVIEW IN (311,321,511,530) 
+        AND (gOPER_IDTYPE IN (119,321,322,340,341,342,343,346,561,661,710,711,780,790,814,816,818,819,821,822,851,852,854,858,859,880) OR gOPER_IDTYPE IS NULL)
+        AND gMESS_REASON_CODE IN (1,8,10,12,13,14,2)
+        AND (gOPER_SUSP_FIRST IN (1017,1019,1050,1054,1055,1057,1058,1064,1067,1072,4013,7006,7013) OR gOPER_SUSP_FIRST IS NULL)
+        AND (gOPER_SUSP_SECOND IN (1017,1019,1050,1054,1055,1057,1058,1064,1067,1072,4013,7006,7013) OR gOPER_SUSP_SECOND IS NULL)
+        AND (gOPER_SUSP_THIRD IN (1017,1019,1050,1054,1055,1057,1058,1064,1067,1072,4013,7006,7013) OR gOPER_SUSP_THIRD IS NULL))
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_OD_LOW_RISK;
+
+  FUNCTION is_ft_operation() RETURN numeric IS
+  BEGIN
+    IF gMESS_OPER_STATUS != 3
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_FT_OPERATION;
+
+  FUNCTION is_ft_high_risk() RETURN numeric IS
+  BEGIN
+    IF gMESS_REASON_CODE IN (2, 8, 4)
+        AND (gOPER_SUSP_FIRST IN (3004,3002,8002)
+          OR (gOPER_SUSP_FIRST = 3001 
+            AND (gMEMBER1_BANK_ADDRESS IN (4,368,566,760,706,887,586,356,180,608,466,854,120,818,508,434,140,792,170,144) 
+              OR gMEMBER2_BANK_ADDRESS IN (4,368,566,760,706,887,586,356,180,608,466,854,120,818,508,434,140,792,170,144)
+            )
+          )
+        )
+        AND (gMEMBER1_MEMBER_TYPE IN (2,3) OR gMEMBER2_MEMBER_TYPE IN (2,3))
+        AND (gMEMBER1_MONEY_TRANS_SYS IS NOT NULL OR gMEMBER2_MONEY_TRANS_SYS IS NOT NULL)
+        AND (gIS_MEMBER1_FT_LIST2 != 0 OR gIS_MEMBER2_FT_LIST2 != 0
+        OR gIS_MEMBER1_FT_LIST3 != 0 OR gIS_MEMBER2_FT_LIST3 != 0
+        OR gIS_MEMBER1_FT_LIST4 != 0 OR gIS_MEMBER2_FT_LIST4 != 0)
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_FT_HIGH_RISK;
+
+  FUNCTION is_ft_mid_risk() RETURN numeric IS
+  BEGIN
+    IF gMESS_REASON_CODE = 4
+        AND (gOPER_SUSP_FIRST IN (3004,3002,8002)
+          OR (gOPER_SUSP_FIRST = 3001 
+            AND (gMEMBER1_BANK_ADDRESS IN (4,368,566,760,706,887,586,356,180,608,466,854,120,818,508,434,140,792,170,144) 
+              OR gMEMBER2_BANK_ADDRESS IN (4,368,566,760,706,887,586,356,180,608,466,854,120,818,508,434,140,792,170,144)
+            )
+          )
+        )
+        AND (gIS_MEMBER1_FT_LIST2 != 0 OR gIS_MEMBER2_FT_LIST2 != 0
+        OR gIS_MEMBER1_FT_LIST3 != 0 OR gIS_MEMBER2_FT_LIST3 != 0)
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_FT_MID_RISK;
+
+  FUNCTION is_ft_low_risk() RETURN numeric IS
+  BEGIN
+    IF gMESS_REASON_CODE IN (2, 8)
+        AND (gOPER_SUSP_FIRST IN (3004,3002,8002)
+          OR (gOPER_SUSP_FIRST = 3001 
+            AND (gMEMBER1_BANK_ADDRESS IN (4,368,566,760,706,887,586,356,180,608,466,854,120,818,508,434,140,792,170,144) 
+              OR gMEMBER2_BANK_ADDRESS IN (4,368,566,760,706,887,586,356,180,608,466,854,120,818,508,434,140,792,170,144)
+            )
+          )
+        )
+        AND (gIS_MEMBER1_FT_LIST2 != 0 OR gIS_MEMBER2_FT_LIST2 != 0
+        OR gIS_MEMBER1_FT_LIST3 != 0 OR gIS_MEMBER2_FT_LIST3 != 0
+        OR gIS_MEMBER1_FT_LIST4 != 0 OR gIS_MEMBER2_FT_LIST4 != 0)
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_FT_LOW_RISK;
+
+  PROCEDURE set_rank(IN prank numeric, IN pcriteria numeric) IS 
+  BEGIN
+    MERGE INTO SIMDATA.SIM_RANK O
+      USING (SELECT gMESS_ID AS MESS_ID, pRANK AS MESS_RANK, pCRITERIA AS MESS_CRITERIA FROM DUAL) N
+      ON (O.MESS_ID = N.MESS_ID)
+      WHEN MATCHED THEN UPDATE SET MESS_RANK = N.MESS_RANK, MESS_CRITERIA = N.MESS_CRITERIA
+      WHEN NOT MATCHED THEN INSERT VALUES (N.MESS_ID, N.MESS_RANK, N.MESS_CRITERIA);
+  END SET_RANK;
+
+  FUNCTION is_abr_range() RETURN numeric IS
+    vIS_RANGE NUMBER := 0; --Если 1, то участвует в ранжировании
+  BEGIN
+    IF gMESS_OPER_STATUS = 1 
+      AND gMESS_REASON_CODE IN (1, 2, 8, 10)
+      AND gCFM_CODE = 11
+      AND ((gMEMBER_ID_PL1 IS NOT NULL AND gMEMBER_RESIDENCE_PL1 = 398) OR (gMEMBER_ID_PL2 IS NOT NULL AND gMEMBER_RESIDENCE_PL2 = 398))
+      AND ((gMEMBER_ID_POL1 IS NOT NULL AND gMEMBER_BANK_ADDRESS_POL1 != 398) OR (gMEMBER_ID_POL2 IS NOT NULL AND gMEMBER_BANK_ADDRESS_POL2 != 398))
+      AND ((gMEMBER_ID_PL1 IS NOT NULL AND gMEMBER_BANK_ADDRESS_PL1 = 398) OR (gMEMBER_ID_PL2 IS NOT NULL AND gMEMBER_BANK_ADDRESS_PL2 = 398))
+      AND gRECEIVE_DATE - gOPER_TRANS_DATE < 15
+    THEN vIS_RANGE := 1;
+    END IF;
+    RETURN vIS_RANGE;
+  END IS_ABR_RANGE;
+
+  FUNCTION is_abr_not_range() RETURN numeric IS
+    vIS_NOT_RANGE NUMBER := 0; --Если 1, то не участвует в ранжировании
+  BEGIN
+    IF (((LOWER(gOPER_DOPINFO) LIKE 'клиент%' AND LOWER(gOPER_DOPINFO) LIKE '%подписал договор%')
+      OR LOWER(gOPER_DOPINFO) LIKE '%неисполненные обязательства%'
+      OR LOWER(gOPER_DOPINFO) LIKE '%не совершено%'
+      OR (LOWER(gOPER_DOPINFO) LIKE '%лкбк%' AND (LOWER(gOPER_DOPINFO) LIKE '%задолженност%' OR LOWER(gOPER_DOPINFO) LIKE '%неисполнением обязательств%'))
+      OR (LOWER(gOPER_DOPINFO) LIKE 'принят%' AND LOWER(gOPER_DOPINFO) LIKE '%репатриац%' AND (LOWER(gOPER_DOPINFO) LIKE '%договор%' OR LOWER(gOPER_DOPINFO) LIKE '%контракт%'))
+      OR (LOWER(gOPER_DOPINFO) LIKE '%банком направлено уведомление о нарушен%' OR LOWER(gOPER_DOPINFO) LIKE '%банком были направлены уведомления о нарушен%' OR LOWER(gOPER_DOPINFO) LIKE '%банком направлены уведомления о нарушен%')
+      OR (LOWER(gOPER_DOPINFO) LIKE '%в поле 3.7 сумма в тенге указана на дату заключения договора%' AND (LOWER(gOPER_DOPINFO) LIKE '%исходящ%' OR LOWER(gOPER_DOPINFO) LIKE '%входящ%'))
+      OR (LOWER(gOPER_DOPINFO) LIKE 'продление срока репатриации%' OR LOWER(gOPER_DOPINFO) LIKE 'увеличение срока репатриации%')
+      OR ((LOWER(gOPER_DOPINFO) LIKE '%репатриац%' OR LOWER(gOPER_DOPINFO) LIKE '%поле 3.7%') AND 
+        (LOWER(gOPER_DOPINFO) NOT LIKE '%opl%' OR LOWER(gOPER_DOPINFO) NOT LIKE '%payment%' OR LOWER(gOPER_DOPINFO) NOT LIKE '%purch%' OR LOWER(gOPER_DOPINFO) NOT LIKE '%transfer%' 
+        OR LOWER(gOPER_DOPINFO) NOT LIKE '%назначение платежа%' OR LOWER(gOPER_DOPINFO) NOT LIKE '%pmnt%' OR LOWER(gOPER_DOPINFO) NOT LIKE '%заявка на международный платеж%' 
+        OR LOWER(gOPER_DOPINFO) NOT LIKE '%platej%' OR LOWER(gOPER_DOPINFO) NOT LIKE '%inv%' OR LOWER(gOPER_DOPINFO) NOT LIKE '%международный иходящий платеж%')))
+      OR ((LOWER(gOPER_DIFFICULTIES) LIKE 'клиент%' AND LOWER(gOPER_DIFFICULTIES) LIKE '%подписал договор%')
+      OR LOWER(gOPER_DIFFICULTIES) LIKE '%неисполненные обязательства%'
+      OR LOWER(gOPER_DIFFICULTIES) LIKE '%не совершено%'
+      OR (LOWER(gOPER_DIFFICULTIES) LIKE '%лкбк%' AND (LOWER(gOPER_DIFFICULTIES) LIKE '%задолженност%' OR LOWER(gOPER_DIFFICULTIES) LIKE '%неисполнением обязательств%'))
+      OR (LOWER(gOPER_DIFFICULTIES) LIKE 'принят%' AND LOWER(gOPER_DIFFICULTIES) LIKE '%репатриац%' AND (LOWER(gOPER_DIFFICULTIES) LIKE '%договор%' OR LOWER(gOPER_DIFFICULTIES) LIKE '%контракт%'))
+      OR (LOWER(gOPER_DIFFICULTIES) LIKE '%банком направлено уведомление о нарушен%' OR LOWER(gOPER_DIFFICULTIES) LIKE '%банком были направлены уведомления о нарушен%' OR LOWER(gOPER_DIFFICULTIES) LIKE '%банком направлены уведомления о нарушен%')
+      OR (LOWER(gOPER_DIFFICULTIES) LIKE '%в поле 3.7 сумма в тенге указана на дату заключения договора%' AND (LOWER(gOPER_DIFFICULTIES) LIKE '%исходящ%' OR LOWER(gOPER_DIFFICULTIES) LIKE '%входящ%'))
+      OR (LOWER(gOPER_DIFFICULTIES) LIKE 'продление срока репатриации%' OR LOWER(gOPER_DIFFICULTIES) LIKE 'увеличение срока репатриации%')
+      OR ((LOWER(gOPER_DIFFICULTIES) LIKE '%репатриац%' OR LOWER(gOPER_DIFFICULTIES) LIKE '%поле 3.7%') AND 
+        (LOWER(gOPER_DIFFICULTIES) NOT LIKE '%opl%' OR LOWER(gOPER_DIFFICULTIES) NOT LIKE '%payment%' OR LOWER(gOPER_DIFFICULTIES) NOT LIKE '%purch%' OR LOWER(gOPER_DIFFICULTIES) NOT LIKE '%transfer%' 
+        OR LOWER(gOPER_DIFFICULTIES) NOT LIKE '%назначение платежа%' OR LOWER(gOPER_DIFFICULTIES) NOT LIKE '%pmnt%' OR LOWER(gOPER_DIFFICULTIES) NOT LIKE '%заявка на международный платеж%' 
+        OR LOWER(gOPER_DIFFICULTIES) NOT LIKE '%platej%' OR LOWER(gOPER_DIFFICULTIES) NOT LIKE '%inv%' OR LOWER(gOPER_DIFFICULTIES) NOT LIKE '%международный иходящий платеж%'))))
+      OR gOPER_SUSP_FIRST = 1069
+      OR gOPER_TENGE_AMOUNT / gOPER_CURRENCY_AMOUNT >= 1000
+      OR (gIS_GREEN_1_POL1 != 0 OR gIS_GREEN_1_POL2 != 0)
+      OR (gIS_GREEN_2_PL1 != 0 OR gIS_GREEN_2_PL2 != 0)
+    THEN vIS_NOT_RANGE := 1;
+    END IF;
+    RETURN vIS_NOT_RANGE;
+
+    EXCEPTION
+      WHEN ZERO_DIVIDE THEN RETURN vIS_NOT_RANGE;
+  END IS_ABR_NOT_RANGE;
+
+  FUNCTION is_piramid_range() RETURN numeric IS
+    vIS_RANGE NUMBER := 0; --Если 1, то участвует в ранжировании
+  BEGIN
+    IF gMESS_OPER_STATUS = 1 
+      AND gMESS_REASON_CODE IN (2, 8)
+    THEN vIS_RANGE := 1;
+    END IF;
+    RETURN vIS_RANGE;
+  END IS_PIRAMID_RANGE;
+
+  FUNCTION is_piramid_high_risk() RETURN numeric IS
+  BEGIN
+    IF gOPER_SUSP_FIRST IN (1056, 1062)
+	  AND LOWER(gOPER_DOPINFO) LIKE '%пирамид%'
+    THEN RETURN 1;
+    ELSE RETURN 0;
+    END IF;
+  END IS_PIRAMID_HIGH_RISK;
+
+  FUNCTION is_piramid_mid_risk() RETURN numeric IS
+  BEGIN
+    IF gOPER_SUSP_FIRST IN (1056, 1062)
+    THEN RETURN 1;
+    ELSE RETURN 0;
+    END IF;
+  END IS_PIRAMID_MID_RISK;
+
+  FUNCTION is_dmft_operation() RETURN numeric IS
+  BEGIN
+    IF gMESS_REASON_CODE IN (8, 9, 10)
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_DMFT_OPERATION;
+
+  FUNCTION is_dmft_ft1() RETURN numeric IS
+  BEGIN
+    IF (gIS_MEMBER1_DMFT_LIST1 != 0 OR gIS_MEMBER2_DMFT_LIST1 != 0
+        OR gIS_MEMBER1_DMFT_LIST2 != 0 OR gIS_MEMBER2_DMFT_LIST2 != 0
+        OR gIS_MEMBER1_DMFT_LIST3 != 0 OR gIS_MEMBER2_DMFT_LIST3 != 0)
+		AND (LOWER(gOPER_DOPINFO) LIKE '%террор%' OR LOWER(gOPER_DOPINFO) LIKE '%нко%'
+		OR LOWER(gOPER_DOPINFO) LIKE '%экстреми%' OR LOWER(gOPER_DOPINFO) LIKE '%оружи%' OR LOWER(gOPER_DOPINFO) LIKE '%массово%'
+		OR LOWER(gOPER_DOPINFO) LIKE '%благотворительн%' OR LOWER(gOPER_DOPINFO) LIKE '%религиозн%' OR LOWER(gOPER_DOPINFO) LIKE '%внешни%признак%'
+		OR LOWER(gOPER_DOPINFO) LIKE '%социальн%сет%' OR LOWER(gOPER_DOPINFO) LIKE '%митинг%' OR LOWER(gOPER_DOPINFO) LIKE '%сбор%'
+		OR LOWER(gMEMBER1_MEMBER_COMMENTS) LIKE '%террор%' OR LOWER(gMEMBER1_MEMBER_COMMENTS) LIKE '%нко%'
+		OR LOWER(gMEMBER1_MEMBER_COMMENTS) LIKE '%экстреми%' OR LOWER(gMEMBER1_MEMBER_COMMENTS) LIKE '%оружи%' OR LOWER(gMEMBER1_MEMBER_COMMENTS) LIKE '%массово%'
+		OR LOWER(gMEMBER1_MEMBER_COMMENTS) LIKE '%благотворительн%' OR LOWER(gMEMBER1_MEMBER_COMMENTS) LIKE '%религиозн%' OR LOWER(gMEMBER1_MEMBER_COMMENTS) LIKE '%внешни%признак%'
+		OR LOWER(gMEMBER1_MEMBER_COMMENTS) LIKE '%социальн%сет%' OR LOWER(gMEMBER1_MEMBER_COMMENTS) LIKE '%митинг%' OR LOWER(gMEMBER1_MEMBER_COMMENTS) LIKE '%сбор%'
+		OR LOWER(gMEMBER2_MEMBER_COMMENTS) LIKE '%террор%' OR LOWER(gMEMBER2_MEMBER_COMMENTS) LIKE '%нко%'
+		OR LOWER(gMEMBER2_MEMBER_COMMENTS) LIKE '%экстреми%' OR LOWER(gMEMBER2_MEMBER_COMMENTS) LIKE '%оружи%' OR LOWER(gMEMBER2_MEMBER_COMMENTS) LIKE '%массово%'
+		OR LOWER(gMEMBER2_MEMBER_COMMENTS) LIKE '%благотворительн%' OR LOWER(gMEMBER2_MEMBER_COMMENTS) LIKE '%религиозн%' OR LOWER(gMEMBER2_MEMBER_COMMENTS) LIKE '%внешни%признак%'
+		OR LOWER(gMEMBER2_MEMBER_COMMENTS) LIKE '%социальн%сет%' OR LOWER(gMEMBER2_MEMBER_COMMENTS) LIKE '%митинг%' OR LOWER(gMEMBER2_MEMBER_COMMENTS) LIKE '%сбор%')
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_DMFT_FT1;
+
+  FUNCTION is_dmft_ft2() RETURN numeric IS
+  BEGIN
+    IF (gIS_MEMBER1_DMFT_LIST1 != 0 OR gIS_MEMBER2_DMFT_LIST1 != 0
+        OR gIS_MEMBER1_DMFT_LIST2 != 0 OR gIS_MEMBER2_DMFT_LIST2 != 0
+        OR gIS_MEMBER1_DMFT_LIST3 != 0 OR gIS_MEMBER2_DMFT_LIST3 != 0)
+		AND (LOWER(gOPER_DOPINFO) LIKE '%нарко%' OR LOWER(gMEMBER1_MEMBER_COMMENTS) LIKE '%нарко%' OR LOWER(gMEMBER2_MEMBER_COMMENTS) LIKE '%нарко%')
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_DMFT_FT2;
+
+  FUNCTION is_dmft_pdl() RETURN numeric IS
+  BEGIN
+    IF gIS_MEMBER1_DMFT_LIST4 != 0 OR gIS_MEMBER2_DMFT_LIST4 != 0
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_DMFT_PDL;
+
+  FUNCTION is_dmft_od() RETURN numeric IS
+  BEGIN
+    IF (gMESS_REASON_CODE IN (9, 10) AND
+        gIS_MEMBER1_DMFT_LIST1 = 0 AND gIS_MEMBER2_DMFT_LIST1 = 0
+        AND gIS_MEMBER1_DMFT_LIST2 = 0 AND gIS_MEMBER2_DMFT_LIST2 = 0
+        AND gIS_MEMBER1_DMFT_LIST3 = 0 AND gIS_MEMBER2_DMFT_LIST3 = 0
+        AND gIS_MEMBER1_DMFT_LIST4 = 0 AND gIS_MEMBER2_DMFT_LIST4 = 0)
+       OR (gMESS_REASON_CODE = 8 AND 
+        gCFM_MAINCODE IN ('920140000084','980640000093','940140000385','061140003010','210440009516','091240012920','050740002486')
+       )
+      THEN RETURN 1;
+      ELSE RETURN 0;
+    END IF;
+  END IS_DMFT_OD;
+
+  FUNCTION is_abr_dublicate() RETURN numeric IS
+    vDUBLICATES NUMBER; --Если больше 1, то являетя дубликатом и не участвует в ранжировании
+    vSQL VARCHAR(4000);
+  BEGIN
+
+  vSQL := 'SELECT COUNT(*)
+    FROM DWH_KFM.EXP_MESSINFO MI
+    JOIN DWH_KFM.EXP_OPERATION OP ON OP.MESS_ID = MI.MESS_ID
+    JOIN DWH_KFM.EXP_SUBJ SB ON SB.MESS_ID = MI.MESS_ID
+    LEFT JOIN DWH_KFM.EXP_MEMBERS PL1 ON PL1.MESS_ID = MI.MESS_ID AND PL1.SIM_MEMBER_MEMBERCODE = 210131 AND PL1.MEMBER_ID = 1
+    LEFT JOIN DWH_KFM.EXP_MEMBERS PL2 ON PL2.MESS_ID = MI.MESS_ID AND PL2.SIM_MEMBER_MEMBERCODE = 210131 AND PL2.MEMBER_ID = 2
+    WHERE TRUNC(OP.OPER_TRANS_DATE) = ''' || gOPER_TRANS_DATE || ''' AND SB.CFM_MAINCODE = ''' || gCFM_MAINCODE || ''' ';
+
+  IF (gOPER_NUMBER IS NOT NULL) THEN
+    vSQL := vSQL || '
+    AND OP.OPER_NUMBER = ''' || gOPER_NUMBER || '''';
+  END IF;
+
+  IF (gMEMBER_MAINCODE_PL1 IS NOT NULL) THEN
+    vSQL := vSQL || '
+    AND PL1.MEMBER_MAINCODE = ''' || gMEMBER_MAINCODE_PL1 || '''';
+  END IF;
+
+  IF (gMEMBER_MAINCODE_PL2 IS NOT NULL) THEN
+    vSQL := vSQL || '
+    AND PL2.MEMBER_MAINCODE = ''' || gMEMBER_MAINCODE_PL2 || '''';
+  END IF;
+
+  vSQL := vSQL || '
+    GROUP BY OP.OPER_NUMBER, OP.OPER_TRANS_DATE, SB.CFM_MAINCODE, PL1.MEMBER_MAINCODE, PL2.MEMBER_MAINCODE';
+
+    EXECUTE IMMEDIATE vSQL INTO vDUBLICATES;
+
+    RETURN vDUBLICATES;
+  END IS_ABR_DUBLICATE;
+
+  PROCEDURE set_params(IN pmess_id numeric) IS
+  BEGIN
+    --Параметры формы ФМ-1
+    SELECT MI.MESS_ID, MO.RECEIVE_DATE, OP.OPER_NUMBER, OP.OPER_TRANS_DATE, MI.MESS_OPER_STATUS, 
+    MI.MESS_REASON_CODE, OP.OPER_TENGE_AMOUNT, OP.OPER_CURRENCY_AMOUNT, OP.OPER_IDVIEW, OP.OPER_IDTYPE,
+    OP.OPER_SUSP_FIRST, OP.OPER_SUSP_SECOND, OP.OPER_SUSP_THIRD,
+    SB.CFM_MAINCODE, SB.CFM_CODE, OP.OPER_DOPINFO, OP.OPER_DIFFICULTIES, 
+    PL1.MEMBER_ID, PL1.MEMBER_MAINCODE, PL1.MEMBER_RESIDENCE_COUNTRYCODE, PL1.MEMBER_BANK_ADDRESS, PL1.MEMBER_TYPE,
+    COALESCE(PL1.MEMBER_UR_NAME, PL1.MEMBER_AC_SECONDNAME || ' ' || PL1.MEMBER_AC_FIRSTNAME || ' ' || PL1.MEMBER_AC_MIDDLENAME),
+    PL2.MEMBER_ID, PL2.MEMBER_MAINCODE, PL2.MEMBER_RESIDENCE_COUNTRYCODE, PL2.MEMBER_BANK_ADDRESS, PL2.MEMBER_TYPE,
+    COALESCE(PL2.MEMBER_UR_NAME, PL2.MEMBER_AC_SECONDNAME || ' ' || PL2.MEMBER_AC_FIRSTNAME || ' ' || PL2.MEMBER_AC_MIDDLENAME),
+    POL1.MEMBER_ID, POL1.MEMBER_MAINCODE, POL1.MEMBER_RESIDENCE_COUNTRYCODE, POL1.MEMBER_BANK_ADDRESS,
+    COALESCE(POL1.MEMBER_UR_NAME, POL1.MEMBER_AC_SECONDNAME || ' ' || POL1.MEMBER_AC_FIRSTNAME || ' ' || POL1.MEMBER_AC_MIDDLENAME),
+    POL2.MEMBER_ID, POL2.MEMBER_MAINCODE, POL2.MEMBER_RESIDENCE_COUNTRYCODE, POL2.MEMBER_BANK_ADDRESS,
+    COALESCE(POL2.MEMBER_UR_NAME, POL2.MEMBER_AC_SECONDNAME || ' ' || POL2.MEMBER_AC_FIRSTNAME || ' ' || POL2.MEMBER_AC_MIDDLENAME),
+    MB1.MEMBER_MAINCODE, MB1.MEMBER_TYPE, MB1.MONEY_TRANS_SYS, MB1.MEMBER_BANK_ADDRESS, MB1.MEMBER_COMMENTS,
+    UPPER(MB1.MEMBER_AC_SECONDNAME), UPPER(MB1.MEMBER_AC_FIRSTNAME), UPPER(MB1.MEMBER_AC_MIDDLENAME), UPPER(MB1.MEMBER_UR_NAME),
+    MB2.MEMBER_MAINCODE, MB2.MEMBER_TYPE, MB2.MONEY_TRANS_SYS, MB2.MEMBER_BANK_ADDRESS, MB2.MEMBER_COMMENTS,
+    UPPER(MB2.MEMBER_AC_SECONDNAME), UPPER(MB2.MEMBER_AC_FIRSTNAME), UPPER(MB2.MEMBER_AC_MIDDLENAME), UPPER(MB2.MEMBER_UR_NAME)
+    INTO gMESS_ID, gRECEIVE_DATE, gOPER_NUMBER, gOPER_TRANS_DATE, gMESS_OPER_STATUS, 
+    gMESS_REASON_CODE, gOPER_TENGE_AMOUNT, gOPER_CURRENCY_AMOUNT, gOPER_IDVIEW, gOPER_IDTYPE,
+    gOPER_SUSP_FIRST, gOPER_SUSP_SECOND, gOPER_SUSP_THIRD,
+    gCFM_MAINCODE, gCFM_CODE, gOPER_DOPINFO, gOPER_DIFFICULTIES, 
+    gMEMBER_ID_PL1, gMEMBER_MAINCODE_PL1, gMEMBER_RESIDENCE_PL1, gMEMBER_BANK_ADDRESS_PL1, gMEMBER_TYPE_PL1, gMEMBER_NAME_PL1,
+    gMEMBER_ID_PL2, gMEMBER_MAINCODE_PL2, gMEMBER_RESIDENCE_PL2, gMEMBER_BANK_ADDRESS_PL2, gMEMBER_TYPE_PL2, gMEMBER_NAME_PL2,
+    gMEMBER_ID_POL1, gMEMBER_MAINCODE_POL1, gMEMBER_RESIDENCE_POL1, gMEMBER_BANK_ADDRESS_POL1, gMEMBER_NAME_POL1,
+    gMEMBER_ID_POL2, gMEMBER_MAINCODE_POL2, gMEMBER_RESIDENCE_POL2, gMEMBER_BANK_ADDRESS_POL2, gMEMBER_NAME_POL2,
+    gMEMBER1_MAINCODE, gMEMBER1_MEMBER_TYPE, gMEMBER1_MONEY_TRANS_SYS, gMEMBER1_BANK_ADDRESS, gMEMBER1_MEMBER_COMMENTS,
+    gMEMBER1_AC_SECONDNAME, gMEMBER1_AC_FIRSTNAME, gMEMBER1_AC_MIDDLENAME, gMEMBER1_UR_NAME,
+    gMEMBER2_MAINCODE, gMEMBER2_MEMBER_TYPE, gMEMBER2_MONEY_TRANS_SYS, gMEMBER2_BANK_ADDRESS, gMEMBER2_MEMBER_COMMENTS,
+    gMEMBER2_AC_SECONDNAME, gMEMBER2_AC_FIRSTNAME, gMEMBER2_AC_MIDDLENAME, gMEMBER2_UR_NAME
+    FROM DWH_KFM.EXP_MESSINFO MI
+    JOIN DWH_KFM.EXP_OPERATION OP ON OP.MESS_ID = MI.MESS_ID
+    JOIN DWH_KFM.EXP_SUBJ SB ON SB.MESS_ID = MI.MESS_ID
+    JOIN MESS_OFM@ARMKFM MO ON MI.MESS_ID = MO.MESS_OFM_ID
+    LEFT JOIN DWH_KFM.EXP_MEMBERS PL1 ON PL1.MESS_ID = MI.MESS_ID AND PL1.SIM_MEMBER_MEMBERCODE = 210131 AND PL1.MEMBER_ID = 1
+    LEFT JOIN DWH_KFM.EXP_MEMBERS PL2 ON PL2.MESS_ID = MI.MESS_ID AND PL2.SIM_MEMBER_MEMBERCODE = 210131 AND PL2.MEMBER_ID = 2
+    LEFT JOIN DWH_KFM.EXP_MEMBERS POL1 ON POL1.MESS_ID = MI.MESS_ID AND POL1.SIM_MEMBER_MEMBERCODE = 210132 AND POL1.MEMBER_ID = 1
+    LEFT JOIN DWH_KFM.EXP_MEMBERS POL2 ON POL2.MESS_ID = MI.MESS_ID AND POL2.SIM_MEMBER_MEMBERCODE = 210132 AND POL2.MEMBER_ID = 2
+    LEFT JOIN DWH_KFM.EXP_MEMBERS MB1 ON MB1.MESS_ID = MI.MESS_ID AND MB1.MEMBER_ID = 1
+    LEFT JOIN DWH_KFM.EXP_MEMBERS MB2 ON MB2.MESS_ID = MI.MESS_ID AND MB2.MEMBER_ID = 2
+    WHERE MI.MESS_ID = pMESS_ID;
+
+    --Вхождение участников в списки Перевод за рубеж
+    SELECT COUNT(*) INTO gIS_GREEN_1_POL1 FROM SIMDATA.LIST_ABROAD_GREEN_1 WHERE (BIN != NULL AND BIN = gMEMBER_MAINCODE_POL1) OR UPPER(NAME) = UPPER(gMEMBER_NAME_POL1);
+    SELECT COUNT(*) INTO gIS_GREEN_1_POL2 FROM SIMDATA.LIST_ABROAD_GREEN_1 WHERE (BIN != NULL AND BIN = gMEMBER_MAINCODE_POL2) OR UPPER(NAME) = UPPER(gMEMBER_NAME_POL2);
+    SELECT COUNT(*) INTO gIS_GREEN_1_PL1 FROM SIMDATA.LIST_ABROAD_GREEN_1 WHERE (BIN != NULL AND BIN = gMEMBER_MAINCODE_PL1) OR UPPER(NAME) = UPPER(gMEMBER_NAME_PL1);
+    SELECT COUNT(*) INTO gIS_GREEN_1_PL2 FROM SIMDATA.LIST_ABROAD_GREEN_1 WHERE (BIN != NULL AND BIN = gMEMBER_MAINCODE_PL2) OR UPPER(NAME) = UPPER(gMEMBER_NAME_PL2);
+    SELECT COUNT(*) INTO gIS_GREEN_2_PL1 FROM SIMDATA.LIST_ABROAD_GREEN_2 WHERE BIN = gMEMBER_MAINCODE_PL1 OR UPPER(NAME) = UPPER(gMEMBER_NAME_PL1);
+    SELECT COUNT(*) INTO gIS_GREEN_2_PL2 FROM SIMDATA.LIST_ABROAD_GREEN_2 WHERE BIN = gMEMBER_MAINCODE_PL2 OR UPPER(NAME) = UPPER(gMEMBER_NAME_PL2);
+    SELECT COUNT(*) INTO gIS_SUBSOIL_USERS_PL1 FROM SIMDATA.LIST_ABROAD_SUBSOIL_USERS WHERE BIN = gMEMBER_MAINCODE_PL1 OR UPPER(NAME) = UPPER(gMEMBER_NAME_PL1);
+    SELECT COUNT(*) INTO gIS_SUBSOIL_USERS_PL2 FROM SIMDATA.LIST_ABROAD_SUBSOIL_USERS WHERE BIN = gMEMBER_MAINCODE_PL2 OR UPPER(NAME) = UPPER(gMEMBER_NAME_PL2);
+    SELECT COUNT(*) INTO gIS_RED_1_PL1 FROM SIMDATA.LIST_ABROAD_RED_1 WHERE BIN = gMEMBER_MAINCODE_PL1;
+    SELECT COUNT(*) INTO gIS_RED_1_PL2 FROM SIMDATA.LIST_ABROAD_RED_1 WHERE BIN = gMEMBER_MAINCODE_PL2;
+    SELECT COUNT(*) INTO gIS_RED_2_PL1 FROM SIMDATA.LIST_ABROAD_RED_2 WHERE BIN = gMEMBER_MAINCODE_PL1;
+    SELECT COUNT(*) INTO gIS_RED_2_PL2 FROM SIMDATA.LIST_ABROAD_RED_2 WHERE BIN = gMEMBER_MAINCODE_PL2;
+    SELECT COUNT(*) INTO gIS_RED_3_PL1 FROM SIMDATA.LIST_ABROAD_RED_3 WHERE BIN = gMEMBER_MAINCODE_PL1;
+    SELECT COUNT(*) INTO gIS_RED_3_PL2 FROM SIMDATA.LIST_ABROAD_RED_3 WHERE BIN = gMEMBER_MAINCODE_PL2;
+    SELECT COUNT(*) INTO gIS_RED_4_POL1 FROM SIMDATA.LIST_ABROAD_RED_4 WHERE UPPER(NAME) = UPPER(gMEMBER_NAME_POL1);
+    SELECT COUNT(*) INTO gIS_RED_4_POL2 FROM SIMDATA.LIST_ABROAD_RED_4 WHERE UPPER(NAME) = UPPER(gMEMBER_NAME_POL2);
+    SELECT COUNT(*) INTO gIS_RED_5_POL1 FROM SIMDATA.LIST_ABROAD_RED_5 WHERE UPPER(NAME) = UPPER(gMEMBER_NAME_POL1);
+    SELECT COUNT(*) INTO gIS_RED_5_POL2 FROM SIMDATA.LIST_ABROAD_RED_5 WHERE UPPER(NAME) = UPPER(gMEMBER_NAME_POL2);
+    SELECT COUNT(*) INTO gIS_FATF_POL1 FROM SIMDATA.LIST_ABROAD_FATF WHERE CODE = gMEMBER_RESIDENCE_POL1 OR CODE = gMEMBER_BANK_ADDRESS_POL1;
+    SELECT COUNT(*) INTO gIS_FATF_POL2 FROM SIMDATA.LIST_ABROAD_FATF WHERE CODE = gMEMBER_RESIDENCE_POL2 OR CODE = gMEMBER_BANK_ADDRESS_POL2;
+
+    --Вхождение участников в списки ОД\ФТ
+    SELECT COUNT(*) INTO gIS_MEMBER1_OD_LIST1 FROM SIMDATA.LIST_OD_50_FORBS WHERE IIN = gMEMBER1_MAINCODE;
+    SELECT COUNT(*) INTO gIS_MEMBER2_OD_LIST1 FROM SIMDATA.LIST_OD_50_FORBS WHERE IIN = gMEMBER2_MAINCODE;
+    SELECT COUNT(*) INTO gIS_MEMBER1_OD_LIST2 FROM SIMDATA.LIST_OD_FL_POST_BT WHERE IIN = gMEMBER1_MAINCODE;
+    SELECT COUNT(*) INTO gIS_MEMBER2_OD_LIST2 FROM SIMDATA.LIST_OD_FL_POST_BT WHERE IIN = gMEMBER2_MAINCODE;
+    SELECT COUNT(*) INTO gIS_MEMBER1_OD_LIST3 FROM SIMDATA.LIST_OD_NP_MON WHERE BIN = gMEMBER1_MAINCODE;
+    SELECT COUNT(*) INTO gIS_MEMBER2_OD_LIST3 FROM SIMDATA.LIST_OD_NP_MON WHERE BIN = gMEMBER2_MAINCODE;
+    SELECT COUNT(*) INTO gIS_MEMBER1_OD_LIST4 FROM SIMDATA.LIST_OD_UCH_PLAT WHERE IINBIN = gMEMBER1_MAINCODE;
+    SELECT COUNT(*) INTO gIS_MEMBER2_OD_LIST4 FROM SIMDATA.LIST_OD_UCH_PLAT WHERE IINBIN = gMEMBER2_MAINCODE;
+    SELECT COUNT(*) INTO gIS_MEMBER1_OD_LIST5 FROM SIMDATA.LIST_OD_UL_POST_BT WHERE BIN = gMEMBER1_MAINCODE;
+    SELECT COUNT(*) INTO gIS_MEMBER2_OD_LIST5 FROM SIMDATA.LIST_OD_UL_POST_BT WHERE BIN = gMEMBER2_MAINCODE;
+    SELECT COUNT(*) INTO gIS_MEMBER1_FT_LIST2 FROM SIMDATA.LIST_FT_ISKL WHERE IIN = gMEMBER1_MAINCODE OR (LASTNAME = gMEMBER1_AC_SECONDNAME AND FIRSTNAME = gMEMBER1_AC_FIRSTNAME AND PATRONYMIC = gMEMBER1_AC_MIDDLENAME);
+    SELECT COUNT(*) INTO gIS_MEMBER2_FT_LIST2 FROM SIMDATA.LIST_FT_ISKL WHERE IIN = gMEMBER2_MAINCODE OR (LASTNAME = gMEMBER2_AC_SECONDNAME AND FIRSTNAME = gMEMBER2_AC_FIRSTNAME AND PATRONYMIC = gMEMBER2_AC_MIDDLENAME);
+    SELECT COUNT(*) INTO gIS_MEMBER1_FT_LIST3 FROM SIMDATA.LIST_FT_MGR WHERE LASTNAME = gMEMBER1_AC_SECONDNAME AND FIRSTNAME = gMEMBER1_AC_FIRSTNAME AND PATRONYMIC = gMEMBER1_AC_MIDDLENAME;
+    SELECT COUNT(*) INTO gIS_MEMBER2_FT_LIST3 FROM SIMDATA.LIST_FT_MGR WHERE LASTNAME = gMEMBER2_AC_SECONDNAME AND FIRSTNAME = gMEMBER2_AC_FIRSTNAME AND PATRONYMIC = gMEMBER2_AC_MIDDLENAME;
+    SELECT COUNT(*) INTO gIS_MEMBER1_FT_LIST4 FROM SIMDATA.LIST_FT_DRT WHERE IIN = gMEMBER1_MAINCODE OR (LASTNAME = gMEMBER1_AC_SECONDNAME AND FIRSTNAME = gMEMBER1_AC_FIRSTNAME AND PATRONYMIC = gMEMBER1_AC_MIDDLENAME);
+    SELECT COUNT(*) INTO gIS_MEMBER2_FT_LIST4 FROM SIMDATA.LIST_FT_DRT WHERE IIN = gMEMBER2_MAINCODE OR (LASTNAME = gMEMBER2_AC_SECONDNAME AND FIRSTNAME = gMEMBER2_AC_FIRSTNAME AND PATRONYMIC = gMEMBER2_AC_MIDDLENAME);
+
+	--Вхождение участников в списки ДМФТ
+	SELECT COUNT(*) INTO gIS_MEMBER1_DMFT_LIST1 FROM SIMDATA.LIST_DMFT_FT_RELATED_FL WHERE IIN = gMEMBER1_MAINCODE OR (LASTNAME = gMEMBER1_AC_SECONDNAME AND FIRSTNAME = gMEMBER1_AC_FIRSTNAME AND PATRONYMIC = gMEMBER1_AC_MIDDLENAME);
+	SELECT COUNT(*) INTO gIS_MEMBER2_DMFT_LIST1 FROM SIMDATA.LIST_DMFT_FT_RELATED_FL WHERE IIN = gMEMBER2_MAINCODE OR (LASTNAME = gMEMBER2_AC_SECONDNAME AND FIRSTNAME = gMEMBER2_AC_FIRSTNAME AND PATRONYMIC = gMEMBER2_AC_MIDDLENAME);
+	SELECT COUNT(*) INTO gIS_MEMBER1_DMFT_LIST2 FROM SIMDATA.LIST_DMFT_FT_RELATED_UL WHERE UPPER(NAME) = UPPER(gMEMBER1_UR_NAME);
+	SELECT COUNT(*) INTO gIS_MEMBER2_DMFT_LIST2 FROM SIMDATA.LIST_DMFT_FT_RELATED_UL WHERE UPPER(NAME) = UPPER(gMEMBER2_UR_NAME);
+	SELECT COUNT(*) INTO gIS_MEMBER1_DMFT_LIST3 FROM SIMDATA.LIST_DMFT_POS_INVOLV WHERE LASTNAME = gMEMBER1_AC_SECONDNAME AND FIRSTNAME = gMEMBER1_AC_FIRSTNAME AND PATRONYMIC = gMEMBER1_AC_MIDDLENAME;
+	SELECT COUNT(*) INTO gIS_MEMBER2_DMFT_LIST3 FROM SIMDATA.LIST_DMFT_POS_INVOLV WHERE LASTNAME = gMEMBER2_AC_SECONDNAME AND FIRSTNAME = gMEMBER2_AC_FIRSTNAME AND PATRONYMIC = gMEMBER2_AC_MIDDLENAME;
+    SELECT COUNT(*) INTO gIS_MEMBER1_DMFT_LIST4 FROM SIMDATA.LIST_DMFT_PDL WHERE (IIN = gMEMBER1_MAINCODE AND IIN IS NOT NULL) OR (LASTNAME = gMEMBER1_AC_SECONDNAME AND FIRSTNAME = gMEMBER1_AC_FIRSTNAME AND PATRONYMIC = gMEMBER1_AC_MIDDLENAME);
+	SELECT COUNT(*) INTO gIS_MEMBER2_DMFT_LIST4 FROM SIMDATA.LIST_DMFT_PDL WHERE (IIN = gMEMBER2_MAINCODE AND IIN IS NOT NULL) OR (LASTNAME = gMEMBER2_AC_SECONDNAME AND FIRSTNAME = gMEMBER2_AC_FIRSTNAME AND PATRONYMIC = gMEMBER2_AC_MIDDLENAME);
+
+  END SET_PARAMS;
+
+  PROCEDURE sim_send_mess(IN paction numeric) IS
+    vLOCAL_HOST_IP VARCHAR2(15) := '192.168.1.1';
+    vSYSDATE VARCHAR2(50);
+    vAUTHDATA VARCHAR2(1000);
+    vAUTH VARCHAR2(1000);
+    vCONTENT VARCHAR2(2000);
+    vRESPONSE VARCHAR2(4000);
+    vPOS NUMBER;
+    vERROR_CODE VARCHAR2(1);
+    vERROR_TEXT VARCHAR2(4000);
+    INVALID_ERROR_CODE EXCEPTION;
+  BEGIN
+    --SELECT UTL_INADDR.GET_HOST_ADDRESS INTO vLOCAL_HOST_IP FROM DUAL;
+    SELECT TO_CHAR(SYSDATE, 'YYYY-MM-DD')||'T'||TO_CHAR(SYSDATE, 'HH24:MI:SS')||'Z' INTO vSYSDATE FROM DUAL;
+    vAUTHDATA := '<authdata msg_id="1" user="eias" password="df6D!8BdF#4" msg_type="5000" user_ip="' || vLOCAL_HOST_IP || '" />';
+    SELECT UTL_RAW.CAST_TO_VARCHAR2(UTL_ENCODE.BASE64_ENCODE(UTL_RAW.CAST_TO_RAW(vAUTHDATA))) INTO vAUTH FROM DUAL;
+    vCONTENT :=
+    '<?xml version="1.0" encoding="UTF-8"?>
+		<sbapi>
+			<header>
+				<interface id="201592835" version="8" />
+				<message ignore_id="yes" id="1" type="5000" created="' || vSYSDATE || '" />
+                <error id="0" />
+                <auth pwd="open">' || vAUTH || '</auth>
+            </header>
+            <body>
+                <function name="f_opr">
+                    <arg name="o_mess_id">' || gMESS_ID || '</arg>
+                    <arg name="o_action">' || pACTION || '</arg>
+                </function>
+            </body>
+        </sbapi>';
+    vRESPONSE := SEND_DB_REQUEST(gURL, vCONTENT);
+    vPOS := INSTR(vRESPONSE, 'error id');
+    IF vPOS != 0 THEN
+      vERROR_CODE := SUBSTR(vRESPONSE, vPOS + 10, 1);
+    END IF;
+    IF vERROR_CODE != '0' THEN
+      RAISE INVALID_ERROR_CODE;
+    END IF;
+    DELETE FROM SIMDATA.SIM_ERROR_MESS WHERE MESS_ID = gMESS_ID;
+
+    EXCEPTION
+    WHEN INVALID_ERROR_CODE THEN
+      vPOS := INSTR(vRESPONSE, 'error id');
+      vERROR_TEXT := SUBSTR(vRESPONSE, vPOS);
+      vPOS := INSTR(vERROR_TEXT, '</header>');
+      vERROR_TEXT := SUBSTR(vERROR_TEXT, 0, vPOS - 5);
+      MERGE INTO SIM_ERROR_MESS O
+      USING (SELECT gMESS_ID AS MESS_ID, vERROR_TEXT AS ERROR_TEXT FROM DUAL) N
+      ON (O.MESS_ID = N.MESS_ID)
+      WHEN MATCHED THEN UPDATE SET ERROR_TEXT = N.ERROR_TEXT, ERROR_DATE = SYSDATE
+      WHEN NOT MATCHED THEN INSERT VALUES (N.MESS_ID, N.ERROR_TEXT, SYSDATE);
+    /*WHEN OTHERS THEN
+      MERGE INTO SIM_ERROR_MESS O
+      USING (SELECT gMESS_ID AS MESS_ID, 
+      (SELECT SYS.UTL_HTTP.GET_DETAILED_SQLERRM FROM DUAL) AS ERROR_TEXT FROM DUAL) N
+      ON (O.MESS_ID = N.MESS_ID)
+      WHEN MATCHED THEN UPDATE SET ERROR_TEXT = N.ERROR_TEXT, ERROR_DATE = SYSDATE
+      WHEN NOT MATCHED THEN INSERT VALUES (N.MESS_ID, N.ERROR_TEXT, SYSDATE);*/
+  END SIM_SEND_MESS;
+
+  FUNCTION send_db_request(papi character varying, pcontent character varying) RETURN character varying IS
+    REQ UTL_HTTP.REQ;
+    RES UTL_HTTP.RESP;
+    BUFFER VARCHAR2(4000); 
+    RESPONSE VARCHAR2(4000);
+  BEGIN
+    -- Defined Http Version And Request Type
+    REQ := UTL_HTTP.BEGIN_REQUEST(pAPI, 'POST','HTTP/1.1');
+    -- Defined Browser Type
+    --UTL_HTTP.SET_HEADER(REQ, 'user-agent', 'mozilla/4.0'); 
+    -- Defined Content Type (JSON - XML .. etc)
+    UTL_HTTP.SET_HEADER(REQ, 'content-type', 'text/xml;charset=UTF-8'); 
+    -- Defined Content Length
+    UTL_HTTP.SET_HEADER(REQ, 'Content-Length', TO_CHAR(LENGTH(pCONTENT)));
+    -- Sent HTTP Request
+    UTL_HTTP.WRITE_TEXT(REQ, pCONTENT);
+    RES := UTL_HTTP.GET_RESPONSE(REQ);
+    -- Get The Response From The HTTP Call
+    BEGIN
+      LOOP
+        UTL_HTTP.READ_LINE(RES, BUFFER);
+        RESPONSE := RESPONSE || BUFFER;
+      END LOOP;
+      UTL_HTTP.END_RESPONSE(RES);
+      RETURN RESPONSE;
+    EXCEPTION
+      WHEN UTL_HTTP.END_OF_BODY THEN UTL_HTTP.END_RESPONSE(RES);
+      RETURN RESPONSE;
+    END;
+  END SEND_DB_REQUEST;
+
+  PROCEDURE sim_send_error_mess() IS 
+	  declare cErrMsg text;
+    CURSOR ERROR_MESS_CUR IS
+      SELECT MESS_ID FROM SIMDATA.SIM_ERROR_MESS;
+  BEGIN
+    FOR REC IN ERROR_MESS_CUR
+    LOOP
+      OP_SUSPENDED(REC.MESS_ID);
+      DO_RANGE(REC.MESS_ID);
+    END LOOP;
+	COMMIT;
+  END;
+
+  PROCEDURE sim_check_range_mess() IS 
+    CURSOR CHECK_MESS_CUR IS
+      SELECT MESS_ID FROM SIMDATA.SIM_CHECK_MESS WHERE  ROWNUM <= 500;
+	  v_id SIMDATA.SIM_CHECK_MESS.MESS_ID%TYPE; -- Declare a variable to hold the REC.id
+  BEGIN
+    FOR REC IN CHECK_MESS_CUR LOOP
+		BEGIN
+            v_id := REC.MESS_ID;  -- Assign the ID to the variable
+            DO_RANGE(v_id);  -- Call the function with the ID
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                CONTINUE;  -- Skip to the next iteration of the cursor loop
+            WHEN OTHERS THEN
+                -- Handle any other unexpected exceptions
+                call EIAS_KFM_DATA.PKG_LOG.call_save_elog(('DO_RANGE(sim_check_range_mess) at REC.MESS_ID = ' || v_id)::character varying);
+                CONTINUE;  -- Skip to the next iteration
+        END;
+    END LOOP;
+    COMMIT;  -- Commit if necessary
+	EXCEPTION
+	    WHEN OTHERS THEN
+			call EIAS_KFM_DATA.PKG_LOG.call_save_elog(('sim_check_range_mess at REC.MESS_ID = ' || v_id)::character varying);
+  END;
+
+PROCEDURE sim_check_range_mess2() IS 
+    CURSOR CHECK_MESS_CUR IS
+      SELECT MESS_ID FROM SIMDATA.SIM_CHECK_MESS WHERE mess_added >= '2024-09-02' order by mess_added asc limit 250;
+	  v_id SIMDATA.SIM_CHECK_MESS.MESS_ID%TYPE; -- Declare a variable to hold the REC.id
+  BEGIN
+    FOR REC IN CHECK_MESS_CUR LOOP
+		BEGIN
+            v_id := REC.MESS_ID;  -- Assign the ID to the variable
+            DO_RANGE(v_id);  -- Call the function with the ID
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                CONTINUE;  -- Skip to the next iteration of the cursor loop
+            WHEN OTHERS THEN
+                -- Handle any other unexpected exceptions
+                call EIAS_KFM_DATA.PKG_LOG.call_save_elog(('DO_RANGE at REC.MESS_ID = ' || v_id)::character varying);
+                CONTINUE;  -- Skip to the next iteration
+        END;
+    END LOOP;
+    COMMIT;  -- Commit if necessary
+	EXCEPTION
+	    WHEN OTHERS THEN
+			call EIAS_KFM_DATA.PKG_LOG.call_save_elog(('sim_check_range_mess2 at REC.MESS_ID = ' || v_id)::character varying);
+  END;
+
+END pkg_sim_range;
