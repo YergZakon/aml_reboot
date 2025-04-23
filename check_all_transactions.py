@@ -35,6 +35,20 @@ MONITORING_RULES = [
     "high_risk_client"              # Клиент с высоким риском
 ]
 
+# Словарь с русскими названиями правил мониторинга
+RULE_NAMES_RU = {
+    "threshold_exceeded": "Превышение пороговой суммы",
+    "high_risk_jurisdiction": "Операция с высокорисковой юрисдикцией",
+    "missing_recipient": "Отсутствие получателя",
+    "missing_payment_purpose": "Отсутствие назначения платежа",
+    "suspicious_activity": "Подозрительная активность",
+    "unusual_transaction_type": "Необычный тип транзакции",
+    "blacklisted_entity": "Участник в черном списке",
+    "round_amount": "Подозрительно круглая сумма",
+    "structured_transactions": "Признаки дробления операции",
+    "high_risk_client": "Клиент с высоким риском"
+}
+
 # ============= Функции проверки правил AML =============
 
 def is_threshold_exceeded(tx_data):

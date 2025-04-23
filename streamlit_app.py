@@ -13,7 +13,7 @@ import base64
 
 # Импортируем функции из check_all_transactions.py
 from check_all_transactions import (
-    MONITORING_SETTINGS, MONITORING_RULES,
+    MONITORING_SETTINGS, MONITORING_RULES, RULE_NAMES_RU,
     is_threshold_exceeded, is_high_risk_jurisdiction, is_missing_recipient,
     is_missing_payment_purpose, is_suspicious_activity, is_unusual_transaction_type,
     is_blacklisted_entity, is_round_amount, is_structured_transaction, is_high_risk_client,
@@ -207,11 +207,14 @@ def show_statistics(df, total_transactions):
     st.subheader("Частота срабатывания правил")
     
     rule_stats = {}
+    rule_names = {}
     for rule in MONITORING_RULES:
         rule_stats[rule] = df[rule].sum()
+        rule_names[rule] = RULE_NAMES_RU.get(rule, rule)
     
     rule_stats_df = pd.DataFrame({
-        'Правило': list(rule_stats.keys()),
+        'Правило': [rule_names[rule] for rule in rule_stats.keys()],
+        'Код правила': list(rule_stats.keys()),
         'Количество': list(rule_stats.values()),
         'Процент': [count / len(df) * 100 for count in rule_stats.values()]
     })
@@ -293,11 +296,13 @@ def show_results(df):
     )
     
     # Фильтр по правилам
-    selected_rules = st.sidebar.multiselect(
+    rule_options = {RULE_NAMES_RU.get(rule, rule): rule for rule in MONITORING_RULES}
+    selected_rule_names = st.sidebar.multiselect(
         "Сработавшие правила",
-        options=MONITORING_RULES,
+        options=list(rule_options.keys()),
         default=[]
     )
+    selected_rules = [rule_options[name] for name in selected_rule_names]
     
     # Применяем фильтры
     mask = (
@@ -435,7 +440,8 @@ def show_results(df):
                 
                 if triggered_rules:
                     for rule in triggered_rules:
-                        st.markdown(f"- {rule}")
+                        rule_name = RULE_NAMES_RU.get(rule, rule)
+                        st.markdown(f"- {rule_name}")
                 else:
                     st.markdown("Нет сработавших правил")
                 
